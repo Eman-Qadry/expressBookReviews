@@ -18,9 +18,24 @@ public_users.post("/register", (req, res) => {
     return res.status(201).json({ message: "User registered successfully" });
 });
 
-// Get the book list available in the shop
-public_users.get('/', (req, res) => {
-    return res.status(200).json(books);
+const fetchBooks = () => {
+  return new Promise((resolve, reject) => {
+      if (books) {
+          resolve(books);
+      } else {
+          reject("Books not found");
+      }
+  });
+}
+
+// Get the book list available in the shop using async-await
+public_users.get('/', async (req, res) => {
+  try {
+      const bookList = await fetchBooks();
+      return res.status(200).json(bookList);
+  } catch (error) {
+      return res.status(500).json({ message: error });
+  }
 });
 
 // Get book details based on ISBN

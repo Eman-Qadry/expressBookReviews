@@ -29,7 +29,7 @@ regd_users.post("/login", (req, res) => {
     const token = jwt.sign({ username }, "your_secret_key", { expiresIn: "2h" });
     req.session.token = token;
 
-    return res.status(200).json({ message: "Login successful", token });
+    return res.status(200).json({ message: "Login successful"});
 });
 
 // Add a book review
@@ -52,7 +52,28 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 
     return res.status(200).json({ message: "Review added successfully", book: books[isbn] });
 });
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+  const { isbn } = req.params;
 
+  if (!req.session.token) {
+      return res.status(403).json({ message: "User not authenticated" });
+  }
+
+  const decoded = jwt.verify(req.session.token, "your_secret_key");
+  const username = decoded.username;
+
+  if (!books[isbn]) {
+      return res.status(404).json({ message: "Book not found" });
+  }
+
+  if (!books[isbn].reviews[username]) {
+      return res.status(404).json({ message: "Review not found" });
+  }
+
+  delete books[isbn].reviews[username];
+
+  return res.status(200).json({ message: "Review deleted successfully", book: books[isbn] });
+});
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
 module.exports.users = users;
